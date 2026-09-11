@@ -13,7 +13,7 @@ def model_load(model_path):
         load_in_4bit= True,
         bnb_4bit_quant_type = "nf4",
         bnb_4bit_use_double_quant = True,
-        bnb_4bit_compute_bits = torch.bfloat16,
+        bnb_4bit_compute_dtype = torch.bfloat16,
     )
 
     tokenizer = AutoTokenizer.from_pretrained(
@@ -31,20 +31,9 @@ def model_load(model_path):
 
     return model,tokenizer
 
-def predict(text,model,tokenizer):
-    prompt = [
-        {
-            "role":"system",
-            "content": "你是一个助手。遇到整数乘法问题，请调用 multiply 工具。",
-        },
-        {
-            "role":"user",
-            "content":text
-        }
-    ]
-
+def predict(message,model,tokenizer):
     input_prompt = tokenizer.apply_chat_template(
-        prompt,
+        message,
         tools = [MULTIPLY_TOOL],
         tokenize = True,
         add_generation_prompt = True,
@@ -75,7 +64,21 @@ def main():
     model_path = project_root / "model" / "qwen3-4b bf16"
     model, tokenizer = model_load(model_path)
 
-    answer = predict("请你计算1888乘以9999",model,tokenizer)
+    message = [
+        {
+            "role":"system",
+            "content":(
+                "你是一个工具助手，遇到整数的乘法问题，请调用multiply工具 "
+                "收到工具结果后，根据结果回答用户，不要反复调用工具"
+            )
+        },
+        {
+            "role":"user",
+            "content":"请你计算199乘以1083"
+        }
+    ]
+
+    answer = predict(message,model,tokenizer)
     print(answer)
     start_tag = "<tool_call>"
     end_tag = "</tool_call>"
@@ -90,6 +93,17 @@ def main():
         if tool_name == "multiply":
             result = multiply(**arguments)
             print("工具执行结果:",result)
+            message.append({
+                "role":"assistant",
+                "content":answer,
+            })
+
+            message.append({
+                "role":"tool",
+                "content":str(result),
+            })
+            final_answer = predict(message,model,tokenizer)
+            print("模型第二次输出：",final_answer)
         else:
             print("未知工具：",tool_name)
     else:
