@@ -1,12 +1,8 @@
-from transformers import(
-AutoTokenizer,
-AutoModelForCausalLM,
-BitsAndBytesConfig,
-)
-from pathlib import Path
+from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 import torch
-from tools import MULTIPLY_TOOL,multiply
-import json
+
+from .tools import MULTIPLY_TOOL
+
 
 def model_load(model_path):
     quantization_config = BitsAndBytesConfig(
@@ -58,59 +54,3 @@ def predict(message,model,tokenizer):
     )
 
     return answer
-
-def main():
-    project_root = Path(__file__).resolve().parents[1]
-    model_path = project_root / "model" / "qwen3-4b bf16"
-    model, tokenizer = model_load(model_path)
-
-    message = [
-        {
-            "role":"system",
-            "content":(
-                "你是一个工具助手，遇到整数的乘法问题，请调用multiply工具 "
-                "收到工具结果后，根据结果回答用户，不要反复调用工具"
-            )
-        },
-        {
-            "role":"user",
-            "content":"请你计算199乘以1083"
-        }
-    ]
-
-    answer = predict(message,model,tokenizer)
-    print(answer)
-    start_tag = "<tool_call>"
-    end_tag = "</tool_call>"
-    if start_tag in answer and end_tag in answer:
-        tool_json = answer.split(start_tag,1)[1].split(end_tag,1)[0]
-
-        tool_call = json.loads(tool_json)
-
-        tool_name = tool_call["name"]
-        arguments = tool_call["arguments"]
-
-        if tool_name == "multiply":
-            result = multiply(**arguments)
-            print("工具执行结果:",result)
-            message.append({
-                "role":"assistant",
-                "content":answer,
-            })
-
-            message.append({
-                "role":"tool",
-                "content":str(result),
-            })
-            final_answer = predict(message,model,tokenizer)
-            print("模型第二次输出：",final_answer)
-        else:
-            print("未知工具：",tool_name)
-    else:
-        print("模型没有调用工具。")
-
-
-
-if __name__ == "__main__":
-    main()
-
