@@ -1,9 +1,8 @@
-"""执行一次工具调用，并将结果交回模型。"""
 
 import json
 
 from .LLM_load import predict
-from .tools import multiply
+from .tools import TOOL_DEFINITION,TOOL_FUNCTION
 
 
 def run_agent(text, model, tokenizer):
@@ -11,8 +10,9 @@ def run_agent(text, model, tokenizer):
         {
             "role":"system",
             "content":(
-                "你是一个工具助手，遇到整数的乘法问题，请调用multiply工具 "
-                "收到工具结果后，根据结果回答用户，不要反复调用工具"
+                "你是一个工具助手，需要的工具的问题请调用工具 "
+                "收到工具结果后，根据结果回答用户，不要反复调用工具 "
+                "每轮只能调用一次工具 "
             )
         },
         {
@@ -48,8 +48,9 @@ def run_agent(text, model, tokenizer):
         tool_name = tool_call["name"]
         arguments = tool_call["arguments"]
 
-        if tool_name == "multiply":
-            result = multiply(**arguments)
+        if tool_name in TOOL_FUNCTION:
+            function = TOOL_FUNCTION[tool_name]
+            result = function(**arguments)
             print("工具结果：",result)
         else:
             print("未知工具：",tool_name)

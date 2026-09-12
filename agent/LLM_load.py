@@ -1,7 +1,7 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 import torch
 
-from .tools import MULTIPLY_TOOL
+from .tools import TOOL_DEFINITION,TOOL_FUNCTION
 
 
 def model_load(model_path):
@@ -30,7 +30,7 @@ def model_load(model_path):
 def predict(message,model,tokenizer):
     input_prompt = tokenizer.apply_chat_template(
         message,
-        tools = [MULTIPLY_TOOL],
+        tools = TOOL_DEFINITION,
         tokenize = True,
         add_generation_prompt = True,
         enable_thinking = False,
