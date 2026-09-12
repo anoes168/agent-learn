@@ -10,6 +10,8 @@ def run_agent(text, model, tokenizer):
         {
             "role":"system",
             "content":(
+                "如果用户缺少计算所需的数字，请明确询问对应步骤缺少什么。"
+                "不得自行猜测数字，也不要发出缺少必需参数的工具请求。"
                 "你是一个工具助手，需要的工具的问题请调用工具 "
                 "收到工具结果后，根据结果回答用户，不要反复调用工具 "
                 "每轮只能调用一次工具 "
@@ -47,6 +49,18 @@ def run_agent(text, model, tokenizer):
 
         tool_name = tool_call["name"]
         arguments = tool_call["arguments"]
+        if "a" not in arguments:
+            print(
+                f"第{round_index + 1}轮，工具{tool_name}缺少参数a，"
+                f"收到的参数：{arguments}"
+            )
+            break
+        if "b" not in arguments:
+            print(
+                f"第{round_index + 1}轮，工具{tool_name}缺少参数b，"
+                f"收到的参数：{arguments}"
+            )
+            break
 
         if tool_name in TOOL_FUNCTION:
             function = TOOL_FUNCTION[tool_name]
@@ -54,6 +68,7 @@ def run_agent(text, model, tokenizer):
             print("工具结果：",result)
         else:
             print("未知工具：",tool_name)
+            break
 
         message.append({
             "role":"tool",

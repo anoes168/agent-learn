@@ -11,7 +11,7 @@ def main():
     model_path = project_root / "model" / "qwen3-4b bf16"
     model, tokenizer = model_load(model_path)
 
-    run_agent("请你计算199乘以1083,得到的数字在乘以999，随后结果与1238相加", model, tokenizer)
+    run_agent("请你计算199乘以1083,得到的数字在乘以 ，随后结果与1238相加", model, tokenizer)
 
 
 if __name__ == "__main__":
