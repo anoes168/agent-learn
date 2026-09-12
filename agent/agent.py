@@ -2,26 +2,10 @@
 import json
 
 from .LLM_load import predict
-from .tools import TOOL_DEFINITION,TOOL_FUNCTION
+from .tools import TOOL_FUNCTION
 
 
-def run_agent(text, model, tokenizer):
-    message = [
-        {
-            "role":"system",
-            "content":(
-                "如果用户缺少计算所需的数字，请明确询问对应步骤缺少什么。"
-                "不得自行猜测数字，也不要发出缺少必需参数的工具请求。"
-                "你是一个工具助手，需要的工具的问题请调用工具 "
-                "收到工具结果后，根据结果回答用户，不要反复调用工具 "
-                "每轮只能调用一次工具 "
-            )
-        },
-        {
-            "role":"user",
-            "content":text
-        }
-    ]
+def run_agent(message, model, tokenizer):
     max_round = 5
     start_tag = "<tool_call>"
     end_tag = "</tool_call>"
@@ -29,7 +13,6 @@ def run_agent(text, model, tokenizer):
     for round_index in range(max_round):
         print(f"\n 第{round_index + 1}轮")
         answer = predict(message, model, tokenizer)
-        print("模型输出:",answer)
 
         message.append({
             "role":"assistant",
@@ -37,12 +20,13 @@ def run_agent(text, model, tokenizer):
         })
 
         if start_tag not in answer:
-            print("最终回答：", answer)
+            print("模型回答:", answer)
             break
 
         if end_tag not in answer:
             print("工具请求不完整，停止执行。")
             break
+        print("模型请求工具:", answer)
 
         tool_json = answer.split(start_tag,1)[1].split(end_tag,1)[0]
         tool_call = json.loads(tool_json)
