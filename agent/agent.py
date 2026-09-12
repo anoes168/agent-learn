@@ -34,17 +34,17 @@ def run_agent(message, model, tokenizer):
         tool_name = tool_call["name"]
         arguments = tool_call["arguments"]
         if "a" not in arguments:
-            print(
-                f"第{round_index + 1}轮，工具{tool_name}缺少参数a，"
-                f"收到的参数：{arguments}"
-            )
-            break
+            message.append({
+                "role": "tool",
+                "content": "执行失败：缺少必需参数 a，请检查工具参数。"
+            })
+            continue
         if "b" not in arguments:
-            print(
-                f"第{round_index + 1}轮，工具{tool_name}缺少参数b，"
-                f"收到的参数：{arguments}"
-            )
-            break
+            message.append({
+                "role": "tool",
+                "content": "执行失败：缺少必需参数 b，请检查工具参数。",
+            })
+            continue
 
         if tool_name in TOOL_FUNCTION:
             function = TOOL_FUNCTION[tool_name]
