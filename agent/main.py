@@ -24,6 +24,9 @@ def main():
         },
     ]
     print("请输入你的问题喵！\n")
+    state = {
+        "last_result": None
+    }
 
     while True:
         text = input("user:").strip()
@@ -37,7 +40,7 @@ def main():
             "role":"user",
             "content": text
         })
-        run_agent(message, model, tokenizer)
+        run_agent(message, model, tokenizer,state)
 
 
 if __name__ == "__main__":

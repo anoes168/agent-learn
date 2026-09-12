@@ -5,14 +5,35 @@ from .LLM_load import predict
 from .tools import TOOL_FUNCTION
 
 
-def run_agent(message, model, tokenizer):
+def run_agent(message, model, tokenizer, state):
     max_round = 5
     start_tag = "<tool_call>"
     end_tag = "</tool_call>"
 
     for round_index in range(max_round):
         print(f"\n 第{round_index + 1}轮")
-        answer = predict(message, model, tokenizer)
+        last_result = state["last_result"]
+        if last_result is None:
+            state_text = "当钱没有工具计算的结果。"
+        else:
+            state_text = f"最近工具调用的结果{last_result}"
+
+        model_message = [
+            {
+                "role": "system",
+                "content": (
+                    message[0]["content"]
+                    + "\n\n【当前计算状态】\n"
+                    + state_text
+                    + "\n用户明确要求接着最近结果计算时，使用该结果。"
+                    + "用户给出新的完整算式时，使用用户指定的数字。"
+                    + "指代不清楚时询问用户，不要猜测。"
+                ),
+            },
+            *message[1:],
+        ]
+
+        answer = predict(model_message, model, tokenizer)
 
         message.append({
             "role":"assistant",
@@ -46,10 +67,25 @@ def run_agent(message, model, tokenizer):
             })
             continue
 
+        if type(arguments["a"]) is not  int or type(arguments["b"]) is not  int:
+            message.append(
+                {
+                    "role": "tool",
+                    "content":(
+                        "执行失败，参数a和b必须是整数 "
+                        "不能是字符串、小数或布尔值。请检查参数后重新调用。"
+                    )
+                }
+            )
+            continue
+
+
         if tool_name in TOOL_FUNCTION:
             function = TOOL_FUNCTION[tool_name]
             result = function(**arguments)
+            state["last_result"] = result
             print("工具结果：",result)
+            print("当前状态：",result)
         else:
             print("未知工具：",tool_name)
             break
