@@ -20,14 +20,29 @@ def run_agent(text, model, tokenizer):
             "content":text
         }
     ]
-
-    answer = predict(message,model,tokenizer)
-    print(answer)
+    max_round = 5
     start_tag = "<tool_call>"
     end_tag = "</tool_call>"
-    if start_tag in answer and end_tag in answer:
-        tool_json = answer.split(start_tag,1)[1].split(end_tag,1)[0]
 
+    for round_index in range(max_round):
+        print(f"\n 第{round_index + 1}轮")
+        answer = predict(message, model, tokenizer)
+        print("模型输出:",answer)
+
+        message.append({
+            "role":"assistant",
+            "content":answer,
+        })
+
+        if start_tag not in answer:
+            print("最终回答：", answer)
+            break
+
+        if end_tag not in answer:
+            print("工具请求不完整，停止执行。")
+            break
+
+        tool_json = answer.split(start_tag,1)[1].split(end_tag,1)[0]
         tool_call = json.loads(tool_json)
 
         tool_name = tool_call["name"]
@@ -35,19 +50,13 @@ def run_agent(text, model, tokenizer):
 
         if tool_name == "multiply":
             result = multiply(**arguments)
-            print("工具执行结果:",result)
-            message.append({
-                "role":"assistant",
-                "content":answer,
-            })
-
-            message.append({
-                "role":"tool",
-                "content":str(result),
-            })
-            final_answer = predict(message,model,tokenizer)
-            print("模型第二次输出：",final_answer)
+            print("工具结果：",result)
         else:
             print("未知工具：",tool_name)
+
+        message.append({
+            "role":"tool",
+            "content":str(result),
+        })
     else:
-        print("模型没有调用工具。")
+        print("已到达最大调用论述，任务尚未得到解决")
