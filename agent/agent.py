@@ -68,6 +68,18 @@ def run_agent(message, model, tokenizer, state):
                 })
                 continue
 
+            if type(arguments["a"]) is not int or type(arguments["b"]) is not int:
+                message.append(
+                    {
+                        "role": "tool",
+                        "content": (
+                            "执行失败，参数a和b必须是整数 "
+                            "不能是字符串、小数或布尔值。请检查参数后重新调用。"
+                        )
+                    }
+                )
+                continue
+
         elif tool_name in ["save_memory"]:
             if "content" not in arguments:
                 message.append({
@@ -82,19 +94,6 @@ def run_agent(message, model, tokenizer, state):
                     "content":"执行失败：content 必须是字符串。"
                 })
                 continue
-
-        if type(arguments["a"]) is not  int or type(arguments["b"]) is not  int:
-            message.append(
-                {
-                    "role": "tool",
-                    "content":(
-                        "执行失败，参数a和b必须是整数 "
-                        "不能是字符串、小数或布尔值。请检查参数后重新调用。"
-                    )
-                }
-            )
-            continue
-
 
         if tool_name in TOOL_FUNCTION:
             function = TOOL_FUNCTION[tool_name]
