@@ -61,8 +61,11 @@ def update_memory(memory_id,new_content):
         "UPDATE memories SET content = ? WHERE id = ?",
         (new_content, memory_id),
     )
+    success = cursor.rowcount > 0
     conn.commit()
     conn.close()
+
+    return success
 
 def delete_memory(memory_id):
     conn = sqlite3.connect(db_path)
