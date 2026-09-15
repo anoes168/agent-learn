@@ -29,6 +29,7 @@ def save_memory(content):
 
     conn.commit()
     conn.close()
+    return "memory saved"
 
 def get_allmemory():
     conn = sqlite3.connect(db_path)
