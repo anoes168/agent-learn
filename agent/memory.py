@@ -64,9 +64,23 @@ def update_memory(memory_id,new_content):
     conn.commit()
     conn.close()
 
+def delete_memory(memory_id):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "DELETE FROM memories WHERE id = ?",
+        (memory_id,)
+    )
+    conn.commit()
+    conn.close()
+
 if __name__ == "__main__":
     init_db()
+    print(save_memory("我爱你qwen"))
     print(get_allmemory())
     print(get_memory_by_id(1))
     update_memory(1,"我爱你")
     print(get_memory_by_id(1))
+    print(delete_memory(1))
+    print(get_allmemory())
