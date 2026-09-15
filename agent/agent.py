@@ -54,18 +54,34 @@ def run_agent(message, model, tokenizer, state):
 
         tool_name = tool_call["name"]
         arguments = tool_call["arguments"]
-        if "a" not in arguments:
-            message.append({
-                "role": "tool",
-                "content": "执行失败：缺少必需参数 a，请检查工具参数。"
-            })
-            continue
-        if "b" not in arguments:
-            message.append({
-                "role": "tool",
-                "content": "执行失败：缺少必需参数 b，请检查工具参数。",
-            })
-            continue
+        if tool_name in ["multiply","add"]:
+            if "a" not in arguments:
+                message.append({
+                    "role": "tool",
+                    "content": "执行失败：缺少必需参数 a，请检查工具参数。"
+                })
+                continue
+            if "b" not in arguments:
+                message.append({
+                    "role": "tool",
+                    "content": "执行失败：缺少必需参数 b，请检查工具参数。",
+                })
+                continue
+
+        elif tool_name in ["save_memory"]:
+            if "content" not in arguments:
+                message.append({
+                    "role":"tool",
+                    "content":"执行失败，缺少参数content。"
+                })
+                continue
+
+            if arguments["content"] is not str:
+                message.append({
+                    "role":"tool",
+                    "content":"执行失败：content 必须是字符串。"
+                })
+                continue
 
         if type(arguments["a"]) is not  int or type(arguments["b"]) is not  int:
             message.append(
