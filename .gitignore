@@ -7,7 +7,7 @@ venv/
 .env
 .env.*
 !.env.example
-data/
+memorydata/
 datasets/
 model/
 models/
