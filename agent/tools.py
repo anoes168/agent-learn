@@ -57,10 +57,14 @@ SAVE_MEMORY_TOOL = {
         "name":"save_memory",
         "description":"保存一条长期记忆。",
         "parameters":{
-            "content":{
-                "type":"string",
-                "description":"需要存储的记忆内容"
+            "type":"object",
+            "properties":{
+                "content": {
+                    "type": "string",
+                    "description": "需要存储的记忆内容"
+                }
             }
+
         },
         "required":["content"]
     }
