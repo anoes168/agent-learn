@@ -11,12 +11,62 @@ def init_db():
         """
         CREATE TABLE IF NOT EXISTS memories(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        CONTENT TEXT NOT NULL
+        content TEXT NOT NULL
         )
         """)
 
     conn.commit()
     conn.close()
 
+def save_memory(content):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "INSERT INTO memories(CONTENT) VALUES (?)",
+        (content,)
+    )
+
+    conn.commit()
+    conn.close()
+
+def get_allmemory():
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT * FROM memories"
+    )
+
+    row = cursor.fetchall()
+    conn.close()
+    return row
+
+def get_memory_by_id(memory_id):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT * FROM memories WHERE id = ?",
+        (memory_id,)
+    )
+    row = cursor.fetchone()
+    conn.close()
+    return row
+
+def update_memory(memory_id,new_content):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE memories SET content = ? WHERE id = ?",
+        (new_content, memory_id),
+    )
+    conn.commit()
+    conn.close()
+
 if __name__ == "__main__":
     init_db()
+    print(get_allmemory())
+    print(get_memory_by_id(1))
+    update_memory(1,"我爱你")
+    print(get_memory_by_id(1))
