@@ -76,7 +76,7 @@ def run_agent(message, model, tokenizer, state):
                 })
                 continue
 
-            if arguments["content"] is not str:
+            if type(arguments["content"]) is not str:
                 message.append({
                     "role":"tool",
                     "content":"执行失败：content 必须是字符串。"
